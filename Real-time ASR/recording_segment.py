@@ -7,6 +7,7 @@ from pydub import AudioSegment
 import wave
 from datetime import datetime
 from speech_recognization import recognization
+from speaker_enroll import req_url
 
 
 def split_audio_with_vad(input_file, output_dir, aggressiveness=3,
@@ -109,6 +110,7 @@ def split_audio_with_vad(input_file, output_dir, aggressiveness=3,
 
         segment.export(output_path, format="wav")
         recognization(output_path)
+        req_url(output_path)
 
     return len(segments)
 
