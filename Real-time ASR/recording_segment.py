@@ -6,8 +6,8 @@ import webrtcvad
 from pydub import AudioSegment
 import wave
 from datetime import datetime
-from speech_recognization import recognization
-from speaker_enroll import req_url
+from speech_recognition import recognization
+from speaker_recognition import req_url
 
 
 def split_audio_with_vad(input_file, output_dir, aggressiveness=3,
@@ -106,11 +106,12 @@ def split_audio_with_vad(input_file, output_dir, aggressiveness=3,
         if i == len(segments) - 1 and has_activity:
             output_path = os.path.join(output_dir, f"the_final_active_segment.wav")
         else:
-            output_path = os.path.join(output_dir, f"{timestamp}_segment_{i+1}.wav")
+            output_path = os.path.join(output_dir, f"{timestamp}_segment_{i + 1}.wav")
 
         segment.export(output_path, format="wav")
-        recognization(output_path)
-        req_url(output_path)
+        text = recognization(output_path)
+        speaker = req_url('search feature', group_id='home', file_path=output_path)
+        print('====*Recognition*====', speaker, ':', text)
 
     return len(segments)
 
@@ -180,8 +181,8 @@ def merge_or_return_wav(remain_file, current_file, output_file):
 
 
 # 使用示例
-if __name__ == "__main__":
-    input_file = "read_book.wav"  # 替换为你的音频文件
-    output_dir = "segment_recording"
-    num_segments = split_audio_with_vad(input_file, output_dir)
-    print(f"分割完成，共生成{num_segments}个片段")
+# if __name__ == "__main__":
+#     input_file = "read_book.wav"  # 替换为你的音频文件
+#     output_dir = "segment_recording"
+#     num_segments = split_audio_with_vad(input_file, output_dir)
+#     print(f"分割完成，共生成{num_segments}个片段")

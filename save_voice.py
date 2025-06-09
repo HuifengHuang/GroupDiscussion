@@ -20,4 +20,4 @@ def record_audio(filename="output.wav", duration=5, sample_rate=16000):
 
 # 调用录音函数
 if __name__ == '__main__':
-    record_audio("read_book.wav", duration=20)
+    record_audio("Real-time ASR/huangpu.wav", duration=5)

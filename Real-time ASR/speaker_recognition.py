@@ -7,11 +7,12 @@ from generalRequest import Gen_req_url
 import json
 import requests
 
-
 APPId = "a69d6c98"
+APISecret = "MzNhZWY0YTM0MzBkOWU4MDY5ZTVkMzNl"
+APIKey = "542ef30748a29afb6837bab801610898"
 
 
-def gen_create_group():
+def gen_create_group(group_id):
     body = {
         "header": {
             "app_id": APPId,
@@ -20,7 +21,7 @@ def gen_create_group():
         "parameter": {
             "s782b4996": {
                 "func": "createGroup",
-                "groupId": "home",
+                "groupId": group_id,
                 "createFeatureRes": {
                     "encoding": "utf8",
                     "compress": "raw",
@@ -100,20 +101,115 @@ def gen_search_feature(group_id, voice_file_path):
     return body
 
 
-def req_url(file_path=None):
+def gen_delete_feature(group_id, feature_id):
+    body = {
+        "header": {
+            "app_id": APPId,
+            "status": 3
+
+        },
+        "parameter": {
+            "s782b4996": {
+                "func": "deleteFeature",
+                "groupId": group_id,
+                "featureId": feature_id,
+                "deleteFeatureRes": {
+                    "encoding": "utf8",
+                    "compress": "raw",
+                    "format": "json"
+                }
+            }
+        }
+    }
+    return body
+
+
+def gen_search_feature_list(group_id):
+    body = {
+        "header": {
+            "app_id": APPId,
+            "status": 3
+        },
+        "parameter": {
+            "s782b4996": {
+                "func": "queryFeatureList",
+                "groupId": group_id,
+                "queryFeatureListRes": {
+                    "encoding": "utf8",
+                    "compress": "raw",
+                    "format": "json"
+                }
+            }
+        }
+    }
+    return body
+
+
+def gen_update_feature(group_id, feature_id, file_path):
+    with open(file_path, "rb") as f:
+        audioBytes = f.read()
+        body = {
+            "header": {
+                "app_id": APPId,
+                "status": 3
+            },
+            "parameter": {
+                "s782b4996": {
+                    "func": "updateFeature",
+                    "groupId": group_id,
+                    "featureId": feature_id,
+                    "updateFeatureRes": {
+                        "encoding": "utf8",
+                        "compress": "raw",
+                        "format": "json"
+                    }
+                }
+            },
+            "payload": {
+                "resource": {
+                    "encoding": "lame",
+                    "sample_rate": 16000,
+                    "channels": 1,
+                    "bit_depth": 16,
+                    "status": 3,
+                    "audio": str(base64.b64encode(audioBytes), 'UTF-8')
+                }
+            }
+        }
+    return body
+
+
+def req_url(service, group_id=None, feature_id=None, file_path=None):
     """
     开始请求
+    :param service: 服务名称['create feature','search feature','create group','delete feature']
+    :param group_id: 组名
+    :param feature_id: 声纹名
     :param file_path: body里的文件路径
     :return:
     """
 
-    APISecret = "MzNhZWY0YTM0MzBkOWU4MDY5ZTVkMzNl"
-    APIKey = "542ef30748a29afb6837bab801610898"
     gen_req_url = Gen_req_url()
-    if file_path.endswith(".wav"):
+    if service == 'create feature':
         file_path = convert_wav_to_mp3(file_path)
-    body = gen_search_feature("home", file_path)
-    request_url = gen_req_url.assemble_ws_auth_url(requset_url='https://api.xf-yun.com/v1/private/s782b4996', method="POST", api_key=APIKey, api_secret=APISecret)
+        body = gen_create_feature(group_id, feature_id, file_path)
+    elif service == 'create group':
+        body = gen_create_group(group_id)
+    elif service == 'search feature':
+        file_path = convert_wav_to_mp3(file_path)
+        body = gen_search_feature(group_id, file_path)
+    elif service == 'delete feature':
+        body = gen_delete_feature(group_id, feature_id)
+    elif service == 'feature list':
+        body = gen_search_feature_list(group_id)
+    elif service == 'update feature':
+        file_path = convert_wav_to_mp3(file_path)
+        body = gen_update_feature(group_id, feature_id, file_path)
+    else:
+        raise Exception("The [service] parameter is invalid")
+
+    request_url = gen_req_url.assemble_ws_auth_url(requset_url='https://api.xf-yun.com/v1/private/s782b4996',
+                                                   method="POST", api_key=APIKey, api_secret=APISecret)
 
     headers = {'content-type': "application/json", 'host': 'api.xf-yun.com', 'appid': '$APPID'}
     response = requests.post(request_url, data=json.dumps(body), headers=headers)
@@ -121,6 +217,7 @@ def req_url(file_path=None):
     print(tempResult)
     result = decode_base64_to_dict(tempResult['payload']['searchFeaRes']['text'])
     print('current speaker: ', result['scoreList'][0]['featureId'])
+    return result['scoreList'][0]['featureId']
 
 
 def convert_wav_to_mp3(input_wav_path, output_mp3_path=None, bitrate="16k"):
@@ -161,14 +258,13 @@ def decode_base64_to_dict(base64_str):
 
 
 if __name__ == '__main__':
-    file_path = 'read_book.wav'
-    # apiname取值:
-    # 1.创建声纹特征库 createGroup
-    # 2.添加音频特征 createFeature
-    # 3.查询特征列表 queryFeatureList
-    # 4.特征比对1:1 searchScoreFea
-    # 5.特征比对1:N searchFea
-    # 6.更新音频特征 updateFeature
-    # 7.删除指定特征 deleteFeature
-    # 8.删除声纹特征库 deleteGroup
-    req_url(file_path=file_path)
+    file_path1 = 'huangpu.wav'
+    # req_url service取值:
+    # 1.创建声纹特征库 create group
+    # 2.添加音频特征 create feature
+    # 3.查询特征列表 feature list
+    # 4.特征比对1:N search feature
+    # 5.更新音频特征 updateFeature
+    # 6.删除指定特征 delete feature
+    req_url('delete feature', 'home', 'NAME')
+    # print(decode_base64_to_dict("eyJmZWF0dXJlSWQiOiJOQU1FIn0==="))

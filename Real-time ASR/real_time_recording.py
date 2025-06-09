@@ -65,7 +65,7 @@ class AudioRecorder:
         wf.setframerate(self.RATE)
         wf.writeframes(b''.join(self.frames))
         wf.close()
-        print(f"Saved recording to {filename}")
+        print(f"Recorder is saving recording to {filename}")
         segment_process(filepath, "segment_recording")
 
 

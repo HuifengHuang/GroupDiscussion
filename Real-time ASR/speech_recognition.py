@@ -14,9 +14,6 @@ def recognize_audio_file(audio_path, engine_type="16k_zh"):
 
     Args:
         audio_path (str): 音频文件路径
-        appid (str): 腾讯云APPID
-        secret_id (str): 腾讯云SECRET_ID
-        secret_key (str): 腾讯云SECRET_KEY
         engine_type (str): 引擎类型，默认为"16k_zh"
 
     Returns:
@@ -92,11 +89,13 @@ def recognization(file_path):
         print(f"Request ID: {result['request_id']}")
         for item in result["result"]:
             print(f"Channel {item['channel_id']}: {item['text']}")
+        return result["result"][0]['text']
     else:
         print("Recognition failed!")
         print(f"Error: {result.get('message', 'Unknown error')}")
         if "code" in result:
             print(f"Error code: {result['code']}")
+        return None
 
 
 # 使用示例
