@@ -215,9 +215,10 @@ def req_url(service, group_id=None, feature_id=None, file_path=None):
     response = requests.post(request_url, data=json.dumps(body), headers=headers)
     tempResult = json.loads(response.content.decode('utf-8'))
     print(tempResult)
-    result = decode_base64_to_dict(tempResult['payload']['searchFeaRes']['text'])
-    print('current speaker: ', result['scoreList'][0]['featureId'])
-    return result['scoreList'][0]['featureId']
+    # result = decode_base64_to_dict(tempResult['payload']['searchFeaRes']['text'])
+    # print('current speaker: ', result['scoreList'][0]['featureId'])
+    # return result['scoreList'][0]['featureId']
+    return tempResult
 
 
 def convert_wav_to_mp3(input_wav_path, output_mp3_path=None, bitrate="16k"):
@@ -266,5 +267,6 @@ if __name__ == '__main__':
     # 4.特征比对1:N search feature
     # 5.更新音频特征 updateFeature
     # 6.删除指定特征 delete feature
-    req_url('delete feature', 'home', 'NAME')
-    # print(decode_base64_to_dict("eyJmZWF0dXJlSWQiOiJOQU1FIn0==="))
+    # req_url('feature list', 'home')
+    print(decode_base64_to_dict(
+        "eyJzY29yZUxpc3QiOlt7ImZlYXR1cmVJZCI6Imh1YW5ncHUiLCJmZWF0dXJlSW5mbyI6IiIsInNjb3JlIjowLjcxfSx7ImZlYXR1cmVJZCI6Imthbmd6aXlhbyIsImZlYXR1cmVJbmZvIjoiIiwic2NvcmUiOjAuNTZ9XX0="))
