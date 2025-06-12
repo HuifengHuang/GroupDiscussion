@@ -2,6 +2,17 @@ import shutil
 import os
 import real_time_recording
 import time
+from speech_recognition import speech_recognition
+from speaker_recognition import req_url
+
+
+def recognition(file_path):
+    text = speech_recognition(file_path)
+    # if text == '':
+    #     print('there is no voice')
+    #     return
+    speaker = req_url('search feature', group_id='home', file_path=file_path)
+    print('====*Recognition*====', speaker, ':', text)
 
 
 def clear_folder(folder_path):

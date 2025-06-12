@@ -82,7 +82,7 @@ def recognize_audio_file(audio_path, engine_type="16k_zh"):
         }
 
 
-def recognization(file_path):
+def speech_recognition(file_path):
     result = recognize_audio_file(file_path)
     if result["success"]:
         print("Recognition successful!")

@@ -218,7 +218,39 @@ def req_url(service, group_id=None, feature_id=None, file_path=None):
     # result = decode_base64_to_dict(tempResult['payload']['searchFeaRes']['text'])
     # print('current speaker: ', result['scoreList'][0]['featureId'])
     # return result['scoreList'][0]['featureId']
-    return tempResult
+    return result_analysis(tempResult, service)
+
+
+def result_analysis(result, service):
+    header = result['header']
+    if header['code'] != 0:
+        print('speaker recognition failed')
+        return ''
+    body = result['payload']
+    if service == 'create feature':
+        text = body['createFeatureRes']['text']
+    elif service == 'create group':
+        text = body['createGroupRes']['text']
+    elif service == 'search feature':
+        text = body['searchFeaRes']['text']
+    elif service == 'delete feature':
+        text = body['deleteFeatureRes']['text']
+    elif service == 'feature list':
+        text = body['queryFeatureListRes']['text']
+    elif service == 'update feature':
+        text = body['updateFeatureRes']['text']
+    else:
+        raise Exception("The [service] parameter is invalid")
+    message = decode_base64_to_dict(text)
+    if service == 'search feature':
+        top_feature = message['scoreList'][0]
+        top_score = top_feature['score']
+        top_feature_id = top_feature['featureId']
+        return top_feature_id, top_score
+    elif service == 'feature list':
+        return message
+    else:
+        return 'success'
 
 
 def convert_wav_to_mp3(input_wav_path, output_mp3_path=None, bitrate="16k"):
@@ -259,7 +291,7 @@ def decode_base64_to_dict(base64_str):
 
 
 if __name__ == '__main__':
-    file_path1 = 'huangpu.wav'
+    file_path1 = '../huangpu.wav'
     # req_url service取值:
     # 1.创建声纹特征库 create group
     # 2.添加音频特征 create feature

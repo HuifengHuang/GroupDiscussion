@@ -6,12 +6,11 @@ import webrtcvad
 from pydub import AudioSegment
 import wave
 from datetime import datetime
-from speech_recognition import recognization
-from speaker_recognition import req_url
+from main import recognition
 
 
 def split_audio_with_vad(input_file, output_dir, aggressiveness=3,
-                         min_activity_duration=1.5, max_silence_duration=0.3,
+                         min_activity_duration=1.2, max_silence_duration=0.3,
                          frame_duration_ms=30, sample_rate=16000):
     """
     使用VAD分割音频文件，并确保结尾的活动音频被单独保存
@@ -62,7 +61,6 @@ def split_audio_with_vad(input_file, output_dir, aggressiveness=3,
     current_segment_start = 0
     last_voice_time = 0
     max_silence_frames = int(max_silence_duration * 1000 / frame_duration_ms)
-    min_activity_frames = int(min_activity_duration * 1000 / frame_duration_ms)
 
     silence_buffer = deque(maxlen=max_silence_frames)
     has_activity = False
@@ -85,12 +83,9 @@ def split_audio_with_vad(input_file, output_dir, aggressiveness=3,
                 has_activity = False
             else:
                 current_segment_start = i + 1
-
     # 特殊处理最后一个片段（即使没有检测到静音结尾）
     if has_activity:
-        # active_duration = last_voice_time - frame_times[current_segment_start] # todo
-        # if active_duration >= min_activity_duration:
-        #     # 确保不会超过音频总长度
+        # 确保不会超过音频总长度
         end_time = min(frame_times[-1] + frame_duration_ms / 1000, len(audio) / 1000)
         segments.append((frame_times[current_segment_start], end_time))
 
@@ -105,20 +100,19 @@ def split_audio_with_vad(input_file, output_dir, aggressiveness=3,
         # 如果是最后一个片段且包含活动语音，使用特殊命名
         if i == len(segments) - 1 and has_activity:
             output_path = os.path.join(output_dir, f"the_final_active_segment.wav")
+            segment.export(output_path, format="wav")
         else:
             output_path = os.path.join(output_dir, f"{timestamp}_segment_{i + 1}.wav")
-
-        segment.export(output_path, format="wav")
-        text = recognization(output_path)
-        speaker = req_url('search feature', group_id='home', file_path=output_path)
-        print('====*Recognition*====', speaker, ':', text)
+            segment.export(output_path, format="wav")
+            # 识别分割后的语音片段
+            recognition(output_path)
 
     return len(segments)
 
 
 def segment_process(input_file, output_dir):
-    current_file = merge_or_return_wav("segment_recording/the_final_active_segment.wav", input_file,
-                                       "segment_recording/target_file.wav")
+    current_file = merge_or_return_wav(output_dir + "/the_final_active_segment.wav", input_file,
+                                       output_dir + "/target_file.wav")
     num_segments = split_audio_with_vad(current_file, output_dir)
     print(f"分割完成，共生成{num_segments}个片段")
 
@@ -127,12 +121,12 @@ def merge_or_return_wav(remain_file, current_file, output_file):
     """
     合并两个.wav文件，但如果第一个文件不存在，则直接返回第二个文件
 
-    :param remain_file: 第一个.wav文件路径
-    :param current_file: 第二个.wav文件路径
+    :param remain_file: 上个文件遗留的.wav文件路径
+    :param current_file: 现处理的.wav文件路径
     :param output_file: 合并后的输出文件路径
     :return: True表示操作成功，False表示失败
     """
-    # 检查第一个文件是否存在
+    # 检查遗留文件是否存在
     if not os.path.exists(remain_file):
         print(f"提示：文件 '{remain_file}' 不存在，直接返回 '{output_file}'")
         try:
@@ -143,18 +137,18 @@ def merge_or_return_wav(remain_file, current_file, output_file):
             print(f"复制文件失败: {str(e)}")
             return False
 
-    # 检查第二个文件是否存在
+    # 检查现处理文件是否存在
     if not os.path.exists(current_file):
         print(f"错误：文件 '{current_file}' 不存在！")
         return False
 
     try:
-        # 打开第一个.wav文件
+        # 打开遗留.wav文件
         with wave.open(remain_file, 'rb') as wav1:
             params1 = wav1.getparams()
             data1 = wav1.readframes(wav1.getnframes())
 
-        # 打开第二个.wav文件
+        # 打开现处理.wav文件
         with wave.open(current_file, 'rb') as wav2:
             params2 = wav2.getparams()
             data2 = wav2.readframes(wav2.getnframes())
