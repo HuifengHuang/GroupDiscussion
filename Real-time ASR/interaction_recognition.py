@@ -100,6 +100,24 @@ def parse_reply_objects(text):
     return reply_objects
 
 
+def get_prompt_word():
+    return "" \
+           "请分析上述若干条对话，我需要知道说话人的每句话是否是在回复其他人，回复对象是谁，按以下格式返回结果\
+            1、回复对象：\
+            2、回复对象：\
+            。。。\
+            注意：回复对象只有具体某一个人和无两种可能，不需要给出理由和解析"
+
+
+def interaction_recognition(raw_statement):
+    complete_statement = raw_statement + "\n" + get_prompt_word()
+    questions = checklen(getText([], "user", complete_statement))
+    # 开始输出模型内容
+    text = get_answer(question)
+    reply_objects = parse_reply_objects(text)
+    print(reply_objects)
+
+
 # 主程序入口
 if __name__ == '__main__':
 

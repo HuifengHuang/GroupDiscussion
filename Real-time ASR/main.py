@@ -4,15 +4,17 @@ import real_time_recording
 import time
 from speech_recognition import speech_recognition
 from speaker_recognition import req_url
+from statement_manager import statement_manager
 
 
 def recognition(file_path):
     text = speech_recognition(file_path)
-    # if text == '':
-    #     print('there is no voice')
-    #     return
-    speaker = req_url('search feature', group_id='home', file_path=file_path)
+    if text == '':
+        print('there is no voice')
+        return
+    speaker, score = req_url('search feature', group_id='home', file_path=file_path)
     print('====*Recognition*====', speaker, ':', text)
+    statement_manager.add_statements(speaker + ':' + text)
 
 
 def clear_folder(folder_path):
