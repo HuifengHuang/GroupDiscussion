@@ -53,6 +53,12 @@ def split_audio_with_vad(input_file, output_dir, times, aggressiveness=3,
         is_speech = vad.is_speech(frame, sample_rate)
         voiced_frames.append(is_speech)
 
+    for frame in voiced_frames:
+        if frame:
+            print('1', end='')
+        else:
+            print('0', end='')
+
     # 转换为时间序列(秒)
     frame_times = [i * frame_duration_ms / 1000 for i in range(len(voiced_frames))]
 

@@ -1,6 +1,7 @@
 import json
 import requests
 import re
+from statement_keeper import add_statement
 
 
 # 请替换XXXXXXXXXX为您的 APIpassword, 获取地址：https://console.xfyun.cn/services/bmx1
@@ -91,7 +92,7 @@ def parse_reply_objects(text):
         if match:
             group = match.group(1)
             # 如果匹配到“无”，则添加None，否则添加匹配的名称
-            reply_objects.append(None if group == '无' else group)
+            reply_objects.append(group)
         else:
             # 如果某行不匹配预期格式，可以选择添加None或其他处理方式
             reply_objects.append(None)
@@ -108,12 +109,13 @@ def get_prompt_word():
             注意：回复对象只有具体某一个人和无两种可能，不需要给出理由和解析"
 
 
-def interaction_recognition(raw_statement):
-    complete_statement = raw_statement + "\n" + get_prompt_word()
+def interaction_recognition(formatted_text, raw_statement):
+    complete_statement = formatted_text + "\n" + get_prompt_word()
     new_statement = complete_statement.replace('&', ':')
     questions = checklen(getText([], "user", new_statement))
     # 开始输出模型内容
     text = get_answer(questions)
+    print(text)
     reply_objects = parse_reply_objects(text)
     for i, (raw_text, reply_obj) in enumerate(zip(raw_statement, reply_objects)):
         add_statement(raw_text + '&' + reply_obj)

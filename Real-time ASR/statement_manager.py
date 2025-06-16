@@ -97,7 +97,7 @@ def another_function(statements):
     formatted_text = "\n".join(
         f"{i + 1}、{stmt}。\n"
         for i, stmt in enumerate(statements))
-    interaction_recognition(formatted_text)
+    interaction_recognition(formatted_text, statements)
 
     # 示例处理: 写入文件
     # with open("processed_statements.txt", "a", encoding="utf-8") as f:
@@ -106,4 +106,4 @@ def another_function(statements):
 
 
 # 全局实例
-statement_manager = StatementManager(batch_size=20, timeout=30.0)
+statement_manager = StatementManager(batch_size=20, timeout=10.0)

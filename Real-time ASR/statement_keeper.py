@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 import os
 from pathlib import Path
 
@@ -23,10 +23,17 @@ def get_log_file_path(date: datetime):
 
 def add_statement(content: str):
     """添加带时间戳的语句"""
+    split_content = content.split('&')
     timestamp = datetime.now()
+    times = split_content[0]
+    speaker = split_content[1]
+    text = split_content[2]
+    reply_object = split_content[3]
     log_entry = {
-        "timestamp": timestamp.isoformat(),
-        "content": content
+        "timestamp": datetime.strptime(times, "%H:%M:%S").time().isoformat(),
+        "speaker": speaker,
+        "text": text,
+        "reply_object": reply_object
     }
 
     log_file = get_log_file_path(timestamp)
