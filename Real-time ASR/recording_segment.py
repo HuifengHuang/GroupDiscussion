@@ -7,10 +7,11 @@ from pydub import AudioSegment
 import wave
 from datetime import datetime
 from main import recognition
+import threading
 
 
 def split_audio_with_vad(input_file, output_dir, times, aggressiveness=3,
-                         min_activity_duration=1.2, max_silence_duration=0.3,
+                         min_activity_duration=1.0, max_silence_duration=0.3,
                          frame_duration_ms=30, sample_rate=16000):
     """
     使用VAD分割音频文件，并确保结尾的活动音频被单独保存
@@ -111,7 +112,9 @@ def split_audio_with_vad(input_file, output_dir, times, aggressiveness=3,
             output_path = os.path.join(output_dir, f"{timestamp}_segment_{i + 1}.wav")
             segment.export(output_path, format="wav")
             # 识别分割后的语音片段
-            recognition(output_path, time_add(times, start))
+            thread = threading.Thread(target=recognition, args=(output_path, time_add(times, start)))
+            # recognition(output_path, time_add(times, start))
+            thread.start()
 
     return len(segments)
 
