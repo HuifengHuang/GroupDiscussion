@@ -9,7 +9,7 @@ from datetime import datetime
 from main import recognition
 
 
-def split_audio_with_vad(input_file, output_dir, aggressiveness=3,
+def split_audio_with_vad(input_file, output_dir, times, aggressiveness=3,
                          min_activity_duration=1.2, max_silence_duration=0.3,
                          frame_duration_ms=30, sample_rate=16000):
     """
@@ -105,15 +105,32 @@ def split_audio_with_vad(input_file, output_dir, aggressiveness=3,
             output_path = os.path.join(output_dir, f"{timestamp}_segment_{i + 1}.wav")
             segment.export(output_path, format="wav")
             # 识别分割后的语音片段
-            recognition(output_path)
+            recognition(output_path, time_add(times, start))
 
     return len(segments)
 
 
-def segment_process(input_file, output_dir):
+def time_add(time, add):
+    split_time = time.split(':')
+    hour = int(split_time[0])
+    minute = int(split_time[1])
+    second = int(split_time[2])
+    if second + add >= 60:
+        second = int(second + add - 60)
+        if minute + 1 == 60:
+            minute = 0
+            hour += 1
+        else:
+            minute += 1
+    else:
+        second = int(second + add)
+    return '' + str(hour) + ':' + str(minute) + ':' + str(second)
+
+
+def segment_process(input_file, output_dir, times):
     current_file = merge_or_return_wav(output_dir + "/the_final_active_segment.wav", input_file,
                                        output_dir + "/target_file.wav")
-    num_segments = split_audio_with_vad(current_file, output_dir)
+    num_segments = split_audio_with_vad(current_file, output_dir, times)
     print(f"分割完成，共生成{num_segments}个片段")
 
 

@@ -57,6 +57,7 @@ class AudioRecorder:
     def save_to_wav(self):
         # 生成带时间戳的文件名
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        times = datetime.now().strftime("%H:%M:%S")
         filename = f"recording_{timestamp}.wav"
         filepath = f"Recording/" + filename
         wf = wave.open(filepath, 'wb')
@@ -66,7 +67,7 @@ class AudioRecorder:
         wf.writeframes(b''.join(self.frames))
         wf.close()
         print(f"Recorder is saving recording to {filename}")
-        segment_process(filepath, "segment_recording")
+        segment_process(filepath, "segment_recording", times)
 
 
 if __name__ == "__main__":
