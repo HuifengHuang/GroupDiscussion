@@ -27,12 +27,12 @@ def add_statement(content: str):
     timestamp = datetime.now()
     times = split_content[0]
     speaker = split_content[1]
-    text = split_content[2]
+    content = split_content[2]
     reply_object = split_content[3]
     log_entry = {
         "timestamp": datetime.strptime(times, "%H:%M:%S").time().isoformat(),
         "speaker": speaker,
-        "text": text,
+        "content": content,
         "reply_object": reply_object
     }
 
@@ -41,7 +41,7 @@ def add_statement(content: str):
         f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
 
 
-def get_statements(start_time: datetime, end_time: datetime):
+def get_statements(start_time: time, end_time: time):
     """
     获取指定时间范围内的所有语句
 
@@ -55,25 +55,20 @@ def get_statements(start_time: datetime, end_time: datetime):
     results = []
 
     # 遍历日期范围内的所有日志文件
-    current_date = start_time.date()
-    end_date = end_time.date()
+    timestamp = datetime.now()
+    log_file = get_log_file_path(timestamp)
 
-    while current_date <= end_date:
-        log_file = get_log_file_path(datetime.combine(current_date, datetime.min.time()))
+    if os.path.exists(log_file):
+        with open(log_file, "r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    entry = json.loads(line)
+                    entry_time = time.fromisoformat(entry["timestamp"])
 
-        if os.path.exists(log_file):
-            with open(log_file, "r", encoding="utf-8") as f:
-                for line in f:
-                    try:
-                        entry = json.loads(line)
-                        entry_time = datetime.fromisoformat(entry["timestamp"])
-
-                        if start_time <= entry_time <= end_time:
-                            results.append(entry)
-                    except json.JSONDecodeError:
-                        continue  # 跳过格式错误的行
-
-        current_date += timedelta(days=1)
+                    if start_time <= entry_time <= end_time:
+                        results.append(entry)
+                except json.JSONDecodeError:
+                    continue  # 跳过格式错误的行
 
     # 按时间升序排列
     results.sort(key=lambda x: x["timestamp"])

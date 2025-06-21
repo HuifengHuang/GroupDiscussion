@@ -300,5 +300,5 @@ if __name__ == '__main__':
     # 5.更新音频特征 updateFeature
     # 6.删除指定特征 delete feature
     # req_url('feature list', 'home')
-    print(decode_base64_to_dict(
-        "eyJzY29yZUxpc3QiOlt7ImZlYXR1cmVJZCI6Imh1YW5ncHUiLCJmZWF0dXJlSW5mbyI6IiIsInNjb3JlIjowLjcxfSx7ImZlYXR1cmVJZCI6Imthbmd6aXlhbyIsImZlYXR1cmVJbmZvIjoiIiwic2NvcmUiOjAuNTZ9XX0="))
+    result = req_url('feature list', 'home')
+    print(result)
