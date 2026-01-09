@@ -6,8 +6,21 @@ import webrtcvad
 from pydub import AudioSegment
 import wave
 from datetime import datetime
-from main import recognition
 import threading
+from speech_recognition import speech_recognition
+from speaker_recognition import req_url
+from statement_manager import statement_manager
+
+
+def recognition(file_path, times):
+    text = speech_recognition(file_path)
+    if text == '':
+        print('there is no voice')
+        return
+    speaker, score = req_url('search feature', group_id='home', file_path=file_path)
+    print('====*Recognition*====', times, ':', speaker, ':', text)
+    statement_manager.add_statements(times + '&' + speaker + '&' + text)
+
 
 
 def split_audio_with_vad(input_file, output_dir, times, aggressiveness=3,

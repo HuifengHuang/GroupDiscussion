@@ -3,7 +3,7 @@
 import sys
 import json
 
-sys.path.append("../..")
+# sys.path.append("../..")
 from common import credential
 from asr import flash_recognizer
 
